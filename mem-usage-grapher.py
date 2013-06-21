@@ -323,7 +323,8 @@ def get_memory_usage( pids_to_show, split_args, include_self=False, only_self=Fa
     return sorted_cmds, shareds, count, total
 
 def graph_setup():
-    pass
+    if not os.path.exists("mem-usage-graph"):
+        os.makedirs("mem-usage-graph")
 
 def print_header():
     sys.stdout.write(" Private  +   Shared  =  RAM used\tProgram \n\n")
