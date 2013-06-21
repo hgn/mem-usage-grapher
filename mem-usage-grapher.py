@@ -11,6 +11,7 @@ import errno
 import os
 import sys
 import hashlib
+import datetime
 
 
 
@@ -63,6 +64,7 @@ def parse_options():
     split_args = False
     pids_to_show = None
     watch = None
+    graph = False
 
     for o, a in opts:
         if o in ('-s', '--split-args'):
@@ -82,8 +84,10 @@ def parse_options():
             except:
                 sys.stderr.write(help())
                 sys.exit(3)
+        if o in ('-g', '--graph'):
+            graph = True
 
-    return (split_args, pids_to_show, watch)
+    return (split_args, pids_to_show, watch, graph)
 
 def help():
     help_msg = 'ps_mem.py - Show process memory usage\n'\
@@ -318,13 +322,16 @@ def get_memory_usage( pids_to_show, split_args, include_self=False, only_self=Fa
 
     return sorted_cmds, shareds, count, total
 
+def graph_setup():
+    pass
+
 def print_header():
     sys.stdout.write(" Private  +   Shared  =  RAM used\tProgram \n\n")
 
 def print_memory_usage(sorted_cmds, shareds, count, total):
     for cmd in sorted_cmds:
         sys.stdout.write("%8sB + %8sB = %8sB\t%s\n" %
-                         (human(cmd[1]-shareds[cmd[0]]),
+                         (human(cmd[1] - shareds[cmd[0]]),
                           human(shareds[cmd[0]]), human(cmd[1]),
                           cmd_with_count(cmd[0], count[cmd[0]])))
     if have_pss:
@@ -352,9 +359,12 @@ def verify_environment():
 
 if __name__ == '__main__':
     verify_environment()
-    split_args, pids_to_show, watch = parse_options()
+    split_args, pids_to_show, watch, graph = parse_options()
 
     print_header()
+    ref_time = datetime.datetime.now()
+    if graph:
+        graph_setup()
 
     if watch is not None:
         try:
