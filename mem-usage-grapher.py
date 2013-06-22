@@ -55,7 +55,7 @@ proc = Proc()
 def parse_options():
     try:
         long_options = ['split-args', 'help']
-        opts, args = getopt.getopt(sys.argv[1:], "shp:w:", long_options)
+        opts, args = getopt.getopt(sys.argv[1:], "sghp:w:", long_options)
     except getopt.GetoptError:
         sys.stderr.write(help())
         sys.exit(3)
@@ -95,6 +95,7 @@ def help():
     '-h                                 Show this help\n'\
     '-w <N>                             Measure and show process memory every N seconds\n'\
     '-p <pid>[,pid2,...pidN]            Only show memory usage PIDs in the specified list\n'
+    '-g                                 Generate memory data for gnuplot processing\n'
 
     return help_msg
 
@@ -326,10 +327,18 @@ def graph_setup():
     if not os.path.exists("mem-usage-graph"):
         os.makedirs("mem-usage-graph")
 
+def graph_memory_usage(sorted_cmds, shareds, count, total):
+    for cmd in sorted_cmds:
+        filepath = "%s/%s" % ("mem-usage-graph", cmd[0])
+        fp = open(filepath,"a+b")
+        sys.stdout.write("%s\n" % (cmd[0]))
+        fp.close()
+
 def print_header():
     sys.stdout.write(" Private  +   Shared  =  RAM used\tProgram \n\n")
 
 def print_memory_usage(sorted_cmds, shareds, count, total):
+    return
     for cmd in sorted_cmds:
         sys.stdout.write("%8sB + %8sB = %8sB\t%s\n" %
                          (human(cmd[1] - shareds[cmd[0]]),
@@ -373,6 +382,7 @@ if __name__ == '__main__':
             while sorted_cmds:
                 sorted_cmds, shareds, count, total = get_memory_usage( pids_to_show, split_args )
                 print_memory_usage(sorted_cmds, shareds, count, total)
+                if graph: graph_memory_usage(sorted_cmds, shareds, count, total)
                 time.sleep(watch)
             else:
                 sys.stdout.write('Process does not exist anymore.\n')
