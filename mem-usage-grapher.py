@@ -373,8 +373,6 @@ if __name__ == '__main__':
 
     print_header()
     ref_time = datetime.datetime.now()
-    if graph:
-        graph_setup()
 
     if watch is not None:
         try:
@@ -382,12 +380,14 @@ if __name__ == '__main__':
             while sorted_cmds:
                 sorted_cmds, shareds, count, total = get_memory_usage( pids_to_show, split_args )
                 print_memory_usage(sorted_cmds, shareds, count, total)
-                if graph: graph_memory_usage(sorted_cmds, shareds, count, total)
                 time.sleep(watch)
             else:
                 sys.stdout.write('Process does not exist anymore.\n')
         except KeyboardInterrupt:
-            pass
+            if graph:
+                sys.stdout.write('\nwriting data to mem-data, waiting\n')
+                graph_setup()
+                graph_memory_usage(sorted_cmds, shareds, count, total)
     else:
         # This is the default behavior
         sorted_cmds, shareds, count, total = get_memory_usage( pids_to_show, split_args )
